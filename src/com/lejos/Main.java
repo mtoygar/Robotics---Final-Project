@@ -15,6 +15,7 @@ import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.motor.Motor;
 import lejos.hardware.port.MotorPort;
 import lejos.hardware.port.SensorPort;
+import lejos.hardware.sensor.EV3ColorSensor;
 import lejos.hardware.sensor.EV3UltrasonicSensor;
 import lejos.hardware.sensor.NXTUltrasonicSensor;
 import lejos.robotics.Color;
@@ -45,12 +46,28 @@ public class Main {
 	
 	static NXTUltrasonicSensor ultrasonicSensorFront = new NXTUltrasonicSensor(SensorPort.S3);
 	static EV3UltrasonicSensor ultrasonicSensorLeft = new EV3UltrasonicSensor(SensorPort.S4);
+	static EV3ColorSensor colorSensor = new EV3ColorSensor(SensorPort.S1);
+	
 	static EV3LargeRegulatedMotor leftMotor;
 	static EV3LargeRegulatedMotor rightMotor;
 	
 	static MovePilot pilot;
 	
 	static int turn = 0;
+	
+	static int getColorSensorValue() {
+		
+		SampleProvider sampleProvider = colorSensor.getColorIDMode();
+		if(sampleProvider.sampleSize() > 0) {
+			float [] samples = new float[sampleProvider.sampleSize()];
+			sampleProvider.fetchSample(samples, 0);
+			
+			//
+			//System.out.println("Front sensor:" +  (100 * samples[0]) + "\n");
+			return (int) samples[0];
+		}
+		return -1;		
+	}
 	
 	static float getFrontUltrasonicSensorValue() {
 		
@@ -235,7 +252,8 @@ public class Main {
 		else if (route == 2){
 			pilot.rotate(90);
 			direction.rotate90Right();
-		} else if (route == 3) {
+		}
+		else if (route == 3) {
 			pilot.rotate(180);
 			direction.rotate90Right();
 			direction.rotate90Right();
@@ -272,7 +290,7 @@ public class Main {
 	}
 	
 	public static int getColor() {
-		//TODO: get color from sensor
-		return 0;
+		return getColorSensorValue();
+		//return -1;
 	}
 }
