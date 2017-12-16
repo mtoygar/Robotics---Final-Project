@@ -16,6 +16,7 @@ import lejos.hardware.motor.Motor;
 import lejos.hardware.port.MotorPort;
 import lejos.hardware.port.SensorPort;
 import lejos.hardware.sensor.EV3ColorSensor;
+import lejos.hardware.sensor.EV3GyroSensor;
 import lejos.hardware.sensor.EV3UltrasonicSensor;
 import lejos.hardware.sensor.NXTUltrasonicSensor;
 import lejos.robotics.Color;
@@ -30,8 +31,8 @@ import lejos.utility.PilotProps;
 public class Main {
 	
 	static final float EDGE = 33;
-	static final float HALF_EDGE = 12;
-	static final float LEFT_HALF_EDGE = 13;
+	static final float HALF_EDGE = 10;
+	static final float LEFT_HALF_EDGE = 7;
 	
 	static Location north = new Location(0,1);
 	static Location south = new Location(0,-1);
@@ -47,6 +48,7 @@ public class Main {
 	static NXTUltrasonicSensor ultrasonicSensorFront = new NXTUltrasonicSensor(SensorPort.S3);
 	static EV3UltrasonicSensor ultrasonicSensorLeft = new EV3UltrasonicSensor(SensorPort.S4);
 	static EV3ColorSensor colorSensor = new EV3ColorSensor(SensorPort.S1);
+	static EV3GyroSensor gyroSensor = new EV3GyroSensor(SensorPort.S2);
 	
 	static EV3LargeRegulatedMotor leftMotor;
 	static EV3LargeRegulatedMotor rightMotor;
@@ -64,6 +66,18 @@ public class Main {
 			
 			//
 			//System.out.println("Front sensor:" +  (100 * samples[0]) + "\n");
+			return (int) samples[0];
+		}
+		return -1;		
+	}
+	
+	static int getGyroSensorValue() {
+		
+		SampleProvider sampleProvider = gyroSensor.getAngleMode();
+		if(sampleProvider.sampleSize() > 0) {
+			float [] samples = new float[sampleProvider.sampleSize()];
+			sampleProvider.fetchSample(samples, 0);
+
 			return (int) samples[0];
 		}
 		return -1;		
@@ -142,8 +156,8 @@ public class Main {
     			WheeledChassis.TYPE_DIFFERENTIAL);
     	
     	pilot = new MovePilot(chassis);
-    	pilot.setAngularSpeed(45);
-    	pilot.setLinearSpeed(20);
+    	pilot.setAngularSpeed(30);
+    	pilot.setLinearSpeed(15);
     	
 		
 		//ServerSocket serverSocket = new ServerSocket(1234);
@@ -182,6 +196,7 @@ public class Main {
 			int moveNumber = findNextMove();
 			
 			move(moveNumber);
+			calibrate();
 			findValuesWithDirection();
 			
 			
@@ -225,17 +240,16 @@ public class Main {
 	}
 	
 	public static boolean getFront(){
-		return getFrontUltrasonicSensorValue()>HALF_EDGE;
+		return getFrontUltrasonicSensorValue()>HALF_EDGE+15;
 	}
 	
 	public static boolean getLeft(){
-		return getLeftUltrasonicSensorValue()>LEFT_HALF_EDGE;
+		return getLeftUltrasonicSensorValue()>LEFT_HALF_EDGE+15;
 	}
 	
 	public static void move(int route){
 		if (route == 0) {
-			pilot.rotate(-90);
-			direction.rotate90Left();
+			turnLeft();
 			
 			//
 			Sound.playTone(440, 75, 10);
@@ -254,9 +268,8 @@ public class Main {
 			direction.rotate90Right();
 		}
 		else if (route == 3) {
-			pilot.rotate(180);
-			direction.rotate90Right();
-			direction.rotate90Right();
+			turnRight();
+			turnRight();
 			
 			//
 			Sound.playTone(440, 75, 10);
@@ -293,4 +306,44 @@ public class Main {
 		return getColorSensorValue();
 		//return -1;
 	}
+	
+	public static void turnLeft() {
+		
+		int target = getGyroSensorValue() + 90;
+		pilot.rotate(-200,true);
+		//
+		System.out.println("Turning!");
+		while((getGyroSensorValue() - target) < 0) System.out.println(getGyroSensorValue());
+		pilot.stop();
+		direction.rotate90Left();
+		//
+		System.out.println("Turning finished!");
+	}
+	
+	public static void turnRight() {
+		
+		int target = getGyroSensorValue() - 90;
+		pilot.rotate(200,true);
+		//
+		System.out.println("Turning!");
+		while((getGyroSensorValue() - target) > 0) System.out.println(getGyroSensorValue());
+		pilot.stop();
+		direction.rotate90Right();
+		//
+		System.out.println("Turning finished!");
+	}
+	
+	public static void calibrate() {
+		if(getFrontUltrasonicSensorValue() < (HALF_EDGE / 2)) {
+			pilot.travel(-1 * (HALF_EDGE - getFrontUltrasonicSensorValue()) ); 
+		}
+		
+		if(getLeftUltrasonicSensorValue() < (LEFT_HALF_EDGE / 2) ) {
+			float value = getLeftUltrasonicSensorValue();
+			turnLeft();
+			pilot.travel(-1 * (LEFT_HALF_EDGE - value));
+			turnRight();
+		}
+	}
+	
 }
