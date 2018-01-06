@@ -264,7 +264,7 @@ public class Main {
 			location.add(direction);
 		}
 		else if (route == 2){
-			pilot.rotate(90);
+			turnRight();
 			direction.rotate90Right();
 		}
 		else if (route == 3) {
