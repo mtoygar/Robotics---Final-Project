@@ -362,6 +362,19 @@ public class Main {
 	}
 
 	public List<Cell> pathPlanning(PossibleCellLocationTuple currentLocation, Location desiredCellLocation){
+
+		// reset the direction after kidnapping. Resetted direction will be north.
+		if (east.isEqual(currentLocation.getDirection()){
+			turnLeft();
+		}
+		if (west.isEqual(currentLocation.getDirection()){
+			turnRight();
+		}
+		if (south.isEqual(currentLocation.getDirection()){
+			turnRight();
+			turnRight();
+		}
+		direction = new Location(north.getX(),north.getY());
 		// implement Dijkstra's Algorithm.
 		mMap.findCell(currentLocation.getL()).setVisited(true);
 		mMap.findCell(currentLocation.getL()).setDistance(0);
@@ -409,6 +422,82 @@ public class Main {
 		return neighbors;
 	}
 
+	public void goAccrossPath(List<Cell> path){
+		for (int i = 0; i < path.size() - 1; i++){
+			findRouteAndMove(path.get(i), path.get(i+1));
+		}
+	}
+
+	public void findRouteAndMove(Cell source, Cell destination){
+		/*
+		Move method. If route:
+		0 --> go left
+		1 --> go front
+		2 --> go reverse
+		3 --> go right
+		*/
+		if (source.getL().getX() > destination.getL().getX()){
+			//west
+			if (direction.isEqual(north)){
+				move(0);
+			}
+			else if (direction.isEqual(south)){
+				move(3);
+			}
+			else if (direction.isEqual(east)){
+				move(2);
+			}
+			else if (direction.isEqual(west)){
+				move(1);
+			}
+		}
+		else if(source.getL().getX() < destination.getL().getX()){
+			//east
+			if (direction.isEqual(north)){
+				move(3);
+			}
+			else if (direction.isEqual(south)){
+				move(0);
+			}
+			else if (direction.isEqual(east)){
+				move(1);
+			}
+			else if (direction.isEqual(west)){
+				move(2);
+			}
+		}
+		else if(source.getL().getY() > destination.getL().getY()){
+			//south
+			if (direction.isEqual(north)){
+				move(2);
+			}
+			else if (direction.isEqual(south)){
+				move(1);
+			}
+			else if (direction.isEqual(east)){
+				move(3);
+			}
+			else if (direction.isEqual(west)){
+				move(0);
+			}
+		}
+		else if(source.getL().getY() < destination.getL().getY()){
+			//north
+			if (direction.isEqual(north)){
+				move(1);
+			}
+			else if (direction.isEqual(south)){
+				move(2);
+			}
+			else if (direction.isEqual(east)){
+				move(0);
+			}
+			else if (direction.isEqual(west)){
+				move(3);
+			}
+		}
+		
+	}
 	
 	public static void turnLeft() {
 		
