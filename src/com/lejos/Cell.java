@@ -6,6 +6,8 @@ public class Cell {
 	Location l;
 	Cell nN,sN,wN,eN;
 	int color;
+	boolean visited;
+	int distance;
 	
 	public Cell() {
 		super();
@@ -23,6 +25,22 @@ public class Cell {
 
 	public void setL(Location l) {
 		this.l = l;
+	}
+
+	public int getDistance() {
+		return distance;
+	}
+
+	public void setDistance(int distance) {
+		this.distance = distance;
+	}
+
+	public boolean isVisited() {
+		return visited;
+	}
+
+	public void setVisited(boolean visited) {
+		this.visited = visited;
 	}
 
 	public Cell getnN() {
@@ -66,5 +84,20 @@ public class Cell {
 	}
 	
 	
-
+	public List<Cell> getNeighborCells(){
+		List<Cell> neighbors = new LinkedList<>();
+		if (this.getnN.getL != null){
+			neighbors.add(this.getnN);
+		}
+		if (this.getsN.getL != null){
+			neighbors.add(this.getsN);
+		}
+		if (this.geteN.getL != null){
+			neighbors.add(this.geteN);
+		}
+		if (this.getwN.getL != null){
+			neighbors.add(this.getwN);
+		}
+		return neighbors;
+	}
 }

@@ -306,6 +306,36 @@ public class Main {
 		return getColorSensorValue();
 		//return -1;
 	}
+	public List<Cell> pathPlanning(PossibleCellLocationTuple currentLocation, Location desiredCellLocation){
+		// implement Dijkstra's Algorithm.
+		mMap.findCell(currentLocation.getL()).setVisited(true);
+		mMap.findCell(currentLocation.getL()).setDistance(0);
+		while (!mMap.findCell(desiredCellLocation).isVisited()){
+			for (Cell cell : mMap.getCellList){
+				if (cell.isVisited()){
+					for (Cell neighbor : cell.getNeighborCells()){
+						if (!neighbor.isVisited()){
+							neighbor.setVisited(true);
+							neighbor.setDistance(cell.getDistance() + 1);
+						}
+					}
+				}
+			}
+		}
+		int finalDistance = mMap.findCell(desiredCellLocation).getDistance();
+		int count = 1;
+		List path = new LinkedList<>();
+		while (count < finalDistance){
+			for (Cell cell : mMap.getCellList){
+				if (cell.getDistance() == count){
+					count = count + 1;
+					path.add(cell);
+				}
+			}
+		}
+		path.add(mMap.findCell(desiredCellLocation));
+		return path;
+	}
 	
 	public static void turnLeft() {
 		
