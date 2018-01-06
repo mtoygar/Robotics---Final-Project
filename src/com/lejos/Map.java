@@ -111,6 +111,33 @@ public class Map {
 		}
 		return null;
 	}
+
+	public List<PossibleCellLocationTuple> findPossibleCellMatches(int color, int numberOfWalls, String wallLocation){
+		List<PossibleCellLocationTuple> locationTuple = new LinkedList<>();
+		for (Cell cell : getCellList()){
+			if ((color == cell.getColor) && (numberOfWalls == cell.getNumberOfWalls)){
+				int direction = 0;
+				for (String wallLocations : cell.getWallLocationList()){
+					if (StringUtils.isEqual(wallLocation, wallLocations)){
+						if (direction == 0){
+							locationTuple.add(new PossibleCellLocationTuple(cell.getL, new Location(0,1)))
+						}
+						else if (direction == 1){
+							locationTuple.add(new PossibleCellLocationTuple(cell.getL, new Location(-1,0)))
+						}
+						else if (direction == 2){
+							locationTuple.add(new PossibleCellLocationTuple(cell.getL, new Location(0,-1)))
+						}
+						else if (direction == 3){
+							locationTuple.add(new PossibleCellLocationTuple(cell.getL, new Location(1,0)))
+						}
+					}
+					direction = direction + 1;
+				}
+			}
+		}
+		return locationTuple;
+	}
 	
 
 }

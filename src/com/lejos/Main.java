@@ -306,6 +306,62 @@ public class Main {
 		return getColorSensorValue();
 		//return -1;
 	}
+
+	public List<PossibleCellLocationTuple> getPossibleCurrentLocationMap(){
+		int color = getColorSensorValue();
+		int numberOfWalls = 0;
+		int count = 0;
+		int route = 0;
+		boolean openGateFound = false;
+		List<PossibleCellLocationTuple> locationTuple = new LinkedList<>();
+		//turn 4 times.
+		String wallLocation = "";
+		for (int i = 0: i<4: i++){
+			if (getFrontUltrasonicSensorValue < HALF_EDGE){
+				wallLocation = wallLocation + "1";
+				numberOfWalls = numberOfWalls + 1;
+			}
+			else{
+				if (!openGateFound){
+					openGateFound = true;
+					route = count;
+				}
+				wallLocation = wallLocation + "0";
+			}
+			count = count + 1;
+			turnLeft();
+		}
+		locationTuple = mMap.findPossibleCellMatches(color, numberOfWalls, wallLocation);	
+		if (locationTuple.size() > 1){
+			if (route == 2 || route == 3){
+				move(route);	
+			}
+			else if (route == 0){
+				move(1);	
+			}
+			else if (route == 1){
+				move(0);	
+			}
+			/*0 1
+			1 0
+			2 2
+			3 3*/
+		}
+		return locationTuple;
+	}
+
+	public PossibleCellLocationTuple localizeRobot(){
+		do {
+			List<PossibleCellLocationTuple> locationTuple = getPossibleCurrentLocationMap();	
+		}
+		while (locationTuple.size > 1){
+			//finds an empty direction and go to that direction, on the background. //change the location that is sent to
+			goToNextCell();
+			List<PossibleCellLocationTuple> locationTuple = getPossibleCurrentLocationMap();
+		}
+		return locationTuple.get(0);
+	}
+
 	public List<Cell> pathPlanning(PossibleCellLocationTuple currentLocation, Location desiredCellLocation){
 		// implement Dijkstra's Algorithm.
 		mMap.findCell(currentLocation.getL()).setVisited(true);

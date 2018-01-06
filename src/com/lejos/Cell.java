@@ -82,7 +82,57 @@ public class Cell {
 	public void setColor(int color) {
 		this.color = color;
 	}
+
+	public int getNumberOfWalls(){
+		in numberOfWalls = 0;
+		if (this.geteN.getL == null){
+			numberOfWalls = numberOfWalls + 1;
+		}
+		if (this.getwN.getL == null){
+			numberOfWalls = numberOfWalls + 1;
+		}
+		if (this.getsN.getL == null){
+			numberOfWalls = numberOfWalls + 1;
+		}
+		if (this.getnN.getL == null){
+			numberOfWalls = numberOfWalls + 1;
+		}
+		return numberOfWalls;
+	}
 	
+	public List<String> getWallLocationList(){
+		List<String> possibleWallLocations = new LinkedList<>();
+		String walls = "";
+		if (this.getnN.getL== null){
+			walls = walls + "1";
+		}
+		else{
+			walls = walls + "0";	
+		}
+		if (this.getwN.getL == null){
+			walls = walls + "1";
+		}
+		else{
+			walls = walls + "0";			
+		}
+		if (this.getsN.getL == null){
+			walls = walls + "1";
+		}
+		else{
+			walls = walls + "0";
+		}
+		if (this.geteN.getL == null){
+			walls = walls + "1";
+		}
+		else{
+			walls = walls + "0";
+		}
+		possibleWallLocations.add(walls);
+		possibleWallLocations.add(walls[1] + walls[2] + walls[3] + walls[0]);
+		possibleWallLocations.add(walls[2] + walls[3] + walls[0] + walls[1]);
+		possibleWallLocations.add(walls[3] + walls[0] + walls[2] + walls[2]);
+		return possibleWallLocations;
+	}
 	
 	public List<Cell> getNeighborCells(){
 		List<Cell> neighbors = new LinkedList<>();
