@@ -356,7 +356,6 @@ public class Main {
 		}
 		while (locationTuple.size > 1){
 			//finds an empty direction and go to that direction, on the background. //change the location that is sent to
-			goToNextCell();
 			List<PossibleCellLocationTuple> locationTuple = getPossibleCurrentLocationMap();
 		}
 		return locationTuple.get(0);
@@ -369,7 +368,7 @@ public class Main {
 		while (!mMap.findCell(desiredCellLocation).isVisited()){
 			for (Cell cell : mMap.getCellList){
 				if (cell.isVisited()){
-					for (Cell neighbor : cell.getNeighborCells()){
+					for (Cell neighbor : getNeighborCells(cell)){
 						if (!neighbor.isVisited()){
 							neighbor.setVisited(true);
 							neighbor.setDistance(cell.getDistance() + 1);
@@ -392,6 +391,24 @@ public class Main {
 		path.add(mMap.findCell(desiredCellLocation));
 		return path;
 	}
+
+	public List<Cell> getNeighborCells(Cell cell){
+		List<Cell> neighbors = new LinkedList<>();
+		if (cell.getnN() == null){
+			neighbors.add(mMap.findCell(new Location(cell.getL().getX(), cell.getL().getY() + 1)));
+		}
+		if (cell.getsN() == null){
+			neighbors.add(mMap.findCell(new Location(cell.getL().getX(), cell.getL().getY() - 1)));
+		}
+		if (cell.geteN() == null){
+			neighbors.add(mMap.findCell(new Location(cell.getL().getX() + 1, cell.getL().getY())));
+		}
+		if (cell.getwN() == null){
+			neighbors.add(mMap.findCell(new Location(cell.getL().getX() + 1, cell.getL().getY())));
+		}
+		return neighbors;
+	}
+
 	
 	public static void turnLeft() {
 		

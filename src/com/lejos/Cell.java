@@ -85,16 +85,16 @@ public class Cell {
 
 	public int getNumberOfWalls(){
 		in numberOfWalls = 0;
-		if (this.geteN.getL == null){
+		if (this.geteN != null){
 			numberOfWalls = numberOfWalls + 1;
 		}
-		if (this.getwN.getL == null){
+		if (this.getwN != null){
 			numberOfWalls = numberOfWalls + 1;
 		}
-		if (this.getsN.getL == null){
+		if (this.getsN != null){
 			numberOfWalls = numberOfWalls + 1;
 		}
-		if (this.getnN.getL == null){
+		if (this.getnN != null){
 			numberOfWalls = numberOfWalls + 1;
 		}
 		return numberOfWalls;
@@ -103,25 +103,25 @@ public class Cell {
 	public List<String> getWallLocationList(){
 		List<String> possibleWallLocations = new LinkedList<>();
 		String walls = "";
-		if (this.getnN.getL== null){
+		if (this.getnN != null){
 			walls = walls + "1";
 		}
 		else{
 			walls = walls + "0";	
 		}
-		if (this.getwN.getL == null){
+		if (this.getwN != null){
 			walls = walls + "1";
 		}
 		else{
 			walls = walls + "0";			
 		}
-		if (this.getsN.getL == null){
+		if (this.getsN != null){
 			walls = walls + "1";
 		}
 		else{
 			walls = walls + "0";
 		}
-		if (this.geteN.getL == null){
+		if (this.geteN != null){
 			walls = walls + "1";
 		}
 		else{
@@ -132,22 +132,5 @@ public class Cell {
 		possibleWallLocations.add(walls[2] + walls[3] + walls[0] + walls[1]);
 		possibleWallLocations.add(walls[3] + walls[0] + walls[2] + walls[2]);
 		return possibleWallLocations;
-	}
-	
-	public List<Cell> getNeighborCells(){
-		List<Cell> neighbors = new LinkedList<>();
-		if (this.getnN.getL != null){
-			neighbors.add(this.getnN);
-		}
-		if (this.getsN.getL != null){
-			neighbors.add(this.getsN);
-		}
-		if (this.geteN.getL != null){
-			neighbors.add(this.geteN);
-		}
-		if (this.getwN.getL != null){
-			neighbors.add(this.getwN);
-		}
-		return neighbors;
 	}
 }
