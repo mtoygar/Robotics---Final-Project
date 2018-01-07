@@ -6,7 +6,7 @@ public class Cell {
 	Location l;
 	Cell nN,sN,wN,eN;
 	int color;
-	boolean visited;
+	boolean visited = false;
 	int distance;
 	
 	public Cell() {
