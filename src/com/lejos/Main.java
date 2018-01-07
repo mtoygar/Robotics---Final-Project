@@ -33,6 +33,7 @@ public class Main {
 	static final float EDGE = 33;
 	static final float HALF_EDGE = 10;
 	static final float LEFT_HALF_EDGE = 7;
+	static final String FILENAME = "map.txt";
 	
 	static Location north = new Location(0,1);
 	static Location south = new Location(0,-1);
@@ -186,7 +187,7 @@ public class Main {
 			
 		mMap.initialize(getFront(),getLeft(),getColor());
 		//int counter = 0;
-		PrintWriter writer = new PrintWriter("map.txt", "UTF-8");
+		PrintWriter writer = new PrintWriter(FILENAME, "UTF-8");
 		while (!mMap.isDiscovered()) {	
 		//while (counter < 4) {	
 			
@@ -212,11 +213,13 @@ public class Main {
 		
 		List<Cell> mapCells = mMap.getCellList();
 		for(Cell cell : mapCells) {
-			writer.print("Cell:" + cell.getL().toString() + " ");
+			writer.print(cell.getL().getX());
+			writer.print(cell.getL().getY());
 			if(cell.getnN() != null) writer.print("1"); else writer.print("0");
 			if(cell.getsN() != null) writer.print("1"); else writer.print("0");
 			if(cell.geteN() != null) writer.print("1"); else writer.print("0");
 			if(cell.getwN() != null) writer.print("1"); else writer.print("0");
+			if(cell.getColor() != null) writer.print(cell.getColor()); else writer.print("n"); //n for null. arbitrary decision.
 			writer.println();
 		}
 		writer.close();
@@ -305,6 +308,83 @@ public class Main {
 	public static int getColor() {
 		return getColorSensorValue();
 		//return -1;
+	}
+
+	public List<Cell> populateCellFromLogs(){
+		List<Cell> recoveredCellList = new LinkedList<>();
+
+		BufferedReader br = null;
+		FileReader fr = null;
+
+		try {
+
+			//br = new BufferedReader(new FileReader(FILENAME));
+			fr = new FileReader(FILENAME);
+			br = new BufferedReader(fr);
+
+			String sCurrentLine;
+
+			while ((sCurrentLine = br.readLine()) != null) {
+				// create new Cell instance with known locations and color.
+				if (StringUtils.isEqual(sCurrentLine[6], "n")){
+					Cell cell = new Cell(new Location(Integer.parseInt(sCurrentLine[0]), Integer.parseInt(sCurrentLine[1])), -1);
+				}
+				else{
+					Cell cell = new Cell(new Location(Integer.parseInt(sCurrentLine[0]), Integer.parseInt(sCurrentLine[1])), Integer.parseInt(sCurrentLine[6]));	
+				}
+
+				// set the neighbors of the cell
+				if (Integer.parseInt(sCurrentLine[2]) == 1){
+					cell.setnN(mMap.getWall());
+				}
+				else{
+					cell.setnN(null);	
+				}
+				if (Integer.parseInt(sCurrentLine[3]) == 1){
+					cell.sN(mMap.getWall());
+				}
+				else{
+					cell.setsN(null);	
+				}
+				if (Integer.parseInt(sCurrentLine[4]) == 1){
+					cell.seteN(mMap.getWall());
+				}
+				else{
+					cell.seteN(null);	
+				}
+				if (Integer.parseInt(sCurrentLine[5]) == 1){
+					cell.setwN(mMap.getWall());
+				}
+				else{
+					cell.setwN(null);	
+				}
+
+				// add cell to the Cell List.
+				recoveredCellList.add(cell);
+				System.out.println(sCurrentLine);
+			}
+
+		} catch (IOException e) {
+
+			e.printStackTrace();
+
+		} finally {
+
+			try {
+
+				if (br != null)
+					br.close();
+
+				if (fr != null)
+					fr.close();
+
+			} catch (IOException ex) {
+
+				ex.printStackTrace();
+
+			}
+
+		}
 	}
 
 	public List<PossibleCellLocationTuple> getPossibleCurrentLocationMap(){
