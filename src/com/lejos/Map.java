@@ -1,6 +1,7 @@
 package com.lejos;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import lejos.robotics.Color;
@@ -101,6 +102,7 @@ public class Map {
 		if(!south) temp.setsN(Map.getWall());
 		if(!east) temp.seteN(Map.getWall());
 		if(!west) temp.setwN(Map.getWall());
+		temp.setColor(color);
 	}
 	
 	public Cell findCell(Location location){
@@ -115,21 +117,21 @@ public class Map {
 	public List<PossibleCellLocationTuple> findPossibleCellMatches(int color, int numberOfWalls, String wallLocation){
 		List<PossibleCellLocationTuple> locationTuple = new LinkedList<>();
 		for (Cell cell : getCellList()){
-			if ((color == cell.getColor) && (numberOfWalls == cell.getNumberOfWalls)){
+			if ((color == cell.getColor()) && (numberOfWalls == cell.getNumberOfWalls())){
 				int direction = 0;
 				for (String wallLocations : cell.getWallLocationList()){
 					if (wallLocation.equals(wallLocations)){
 						if (direction == 0){
-							locationTuple.add(new PossibleCellLocationTuple(cell.getL, new Location(0,1)))
+							locationTuple.add(new PossibleCellLocationTuple(cell.getL(), new Location(0,1)));
 						}
 						else if (direction == 1){
-							locationTuple.add(new PossibleCellLocationTuple(cell.getL, new Location(-1,0)))
+							locationTuple.add(new PossibleCellLocationTuple(cell.getL(), new Location(-1,0)));
 						}
 						else if (direction == 2){
-							locationTuple.add(new PossibleCellLocationTuple(cell.getL, new Location(0,-1)))
+							locationTuple.add(new PossibleCellLocationTuple(cell.getL(), new Location(0,-1)));
 						}
 						else if (direction == 3){
-							locationTuple.add(new PossibleCellLocationTuple(cell.getL, new Location(1,0)))
+							locationTuple.add(new PossibleCellLocationTuple(cell.getL(), new Location(1,0)));
 						}
 					}
 					direction = direction + 1;

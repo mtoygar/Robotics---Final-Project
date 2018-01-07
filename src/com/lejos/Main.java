@@ -1,9 +1,13 @@
 package com.lejos;
+import java.io.BufferedReader;
 import java.io.DataOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.LinkedList;
 import java.util.List;
 
 import lejos.hardware.BrickFinder;
@@ -219,7 +223,7 @@ public class Main {
 			if(cell.getsN() != null) writer.print("1"); else writer.print("0");
 			if(cell.geteN() != null) writer.print("1"); else writer.print("0");
 			if(cell.getwN() != null) writer.print("1"); else writer.print("0");
-			if(cell.getColor() != null) writer.print(cell.getColor()); else writer.print("n"); //n for null. arbitrary decision.
+			writer.print(cell.getColor());
 			writer.println();
 		}
 		writer.close();
@@ -250,7 +254,7 @@ public class Main {
 		return getLeftUltrasonicSensorValue()>LEFT_HALF_EDGE+15;
 	}
 	
-	public static void move(int route){
+	public static void move(int route) throws IOException{
 		if (route == 0) {
 			turnLeft();
 			
@@ -326,34 +330,32 @@ public class Main {
 
 			while ((sCurrentLine = br.readLine()) != null) {
 				// create new Cell instance with known locations and color.
-				if (sCurrentLine[6].equals("n")){
-					Cell cell = new Cell(new Location(Integer.parseInt(sCurrentLine[0]), Integer.parseInt(sCurrentLine[1])), -1);
-				}
-				else{
-					Cell cell = new Cell(new Location(Integer.parseInt(sCurrentLine[0]), Integer.parseInt(sCurrentLine[1])), Integer.parseInt(sCurrentLine[6]));	
-				}
+				
+				Cell cell = new Cell(new Location(Integer.parseInt(""+sCurrentLine.charAt(0)), 
+						Integer.parseInt(""+sCurrentLine.charAt(1))),
+						Integer.parseInt(""+sCurrentLine.charAt(6)));	
 
 				// set the neighbors of the cell
-				if (Integer.parseInt(sCurrentLine[2]) == 1){
-					cell.setnN(mMap.getWall());
+				if (Integer.parseInt(""+sCurrentLine.charAt(2)) == 1){
+					cell.setnN(Map.getWall());
 				}
 				else{
 					cell.setnN(null);	
 				}
-				if (Integer.parseInt(sCurrentLine[3]) == 1){
-					cell.sN(mMap.getWall());
+				if (Integer.parseInt(""+sCurrentLine.charAt(3)) == 1){
+					cell.setsN(Map.getWall());
 				}
 				else{
 					cell.setsN(null);	
 				}
-				if (Integer.parseInt(sCurrentLine[4]) == 1){
-					cell.seteN(mMap.getWall());
+				if (Integer.parseInt(""+sCurrentLine.charAt(4)) == 1){
+					cell.seteN(Map.getWall());
 				}
 				else{
 					cell.seteN(null);	
 				}
-				if (Integer.parseInt(sCurrentLine[5]) == 1){
-					cell.setwN(mMap.getWall());
+				if (Integer.parseInt(""+sCurrentLine.charAt(5)) == 1){
+					cell.setwN(Map.getWall());
 				}
 				else{
 					cell.setwN(null);	
@@ -385,9 +387,10 @@ public class Main {
 			}
 
 		}
+		return recoveredCellList;
 	}
 
-	public List<PossibleCellLocationTuple> getPossibleCurrentLocationMap(){
+	public List<PossibleCellLocationTuple> getPossibleCurrentLocationMap() throws IOException{
 		int color = getColorSensorValue();
 		int numberOfWalls = 0;
 		int count = 0;
@@ -430,13 +433,12 @@ public class Main {
 		return locationTuple;
 	}
 
-	public PossibleCellLocationTuple localizeRobot(){
-		do {
-			List<PossibleCellLocationTuple> locationTuple = getPossibleCurrentLocationMap();	
-		}
-		while (locationTuple.size > 1){
+	public PossibleCellLocationTuple localizeRobot() throws IOException{
+		
+		List<PossibleCellLocationTuple> locationTuple = getPossibleCurrentLocationMap();	
+		while (locationTuple.size() > 1){
 			//finds an empty direction and go to that direction, on the background. //change the location that is sent to
-			List<PossibleCellLocationTuple> locationTuple = getPossibleCurrentLocationMap();
+			locationTuple = getPossibleCurrentLocationMap();
 		}
 		return locationTuple.get(0);
 	}
@@ -444,13 +446,13 @@ public class Main {
 	public List<Cell> pathPlanning(PossibleCellLocationTuple currentLocation, Location desiredCellLocation){
 
 		// reset the direction after kidnapping. Resetted direction will be north.
-		if (east.isEqual(currentLocation.getDirection()){
+		if (east.equals(currentLocation.getDirection())){
 			turnLeft();
 		}
-		if (west.isEqual(currentLocation.getDirection()){
+		if (west.equals(currentLocation.getDirection())){
 			turnRight();
 		}
-		if (south.isEqual(currentLocation.getDirection()){
+		if (south.equals(currentLocation.getDirection())){
 			turnRight();
 			turnRight();
 		}
@@ -459,7 +461,7 @@ public class Main {
 		mMap.findCell(currentLocation.getL()).setVisited(true);
 		mMap.findCell(currentLocation.getL()).setDistance(0);
 		while (!mMap.findCell(desiredCellLocation).isVisited()){
-			for (Cell cell : mMap.getCellList){
+			for (Cell cell : mMap.getCellList()){
 				if (cell.isVisited()){
 					for (Cell neighbor : getNeighborCells(cell)){
 						if (!neighbor.isVisited()){
@@ -472,9 +474,9 @@ public class Main {
 		}
 		int finalDistance = mMap.findCell(desiredCellLocation).getDistance();
 		int count = 1;
-		List path = new LinkedList<>();
+		List<Cell> path = new LinkedList<>();
 		while (count < finalDistance){
-			for (Cell cell : mMap.getCellList){
+			for (Cell cell : mMap.getCellList()){
 				if (cell.getDistance() == count){
 					count = count + 1;
 					path.add(cell);
@@ -502,13 +504,13 @@ public class Main {
 		return neighbors;
 	}
 
-	public void goAccrossPath(List<Cell> path){
+	public void goAccrossPath(List<Cell> path) throws IOException{
 		for (int i = 0; i < path.size() - 1; i++){
 			findRouteAndMove(path.get(i), path.get(i+1));
 		}
 	}
 
-	public void findRouteAndMove(Cell source, Cell destination){
+	public void findRouteAndMove(Cell source, Cell destination) throws IOException{
 		/*
 		Move method. If route:
 		0 --> go left
@@ -518,61 +520,61 @@ public class Main {
 		*/
 		if (source.getL().getX() > destination.getL().getX()){
 			//west
-			if (direction.isEqual(north)){
+			if (direction.equals(north)){
 				move(0);
 			}
-			else if (direction.isEqual(south)){
+			else if (direction.equals(south)){
 				move(3);
 			}
-			else if (direction.isEqual(east)){
+			else if (direction.equals(east)){
 				move(2);
 			}
-			else if (direction.isEqual(west)){
+			else if (direction.equals(west)){
 				move(1);
 			}
 		}
 		else if(source.getL().getX() < destination.getL().getX()){
 			//east
-			if (direction.isEqual(north)){
+			if (direction.equals(north)){
 				move(3);
 			}
-			else if (direction.isEqual(south)){
+			else if (direction.equals(south)){
 				move(0);
 			}
-			else if (direction.isEqual(east)){
+			else if (direction.equals(east)){
 				move(1);
 			}
-			else if (direction.isEqual(west)){
+			else if (direction.equals(west)){
 				move(2);
 			}
 		}
 		else if(source.getL().getY() > destination.getL().getY()){
 			//south
-			if (direction.isEqual(north)){
+			if (direction.equals(north)){
 				move(2);
 			}
-			else if (direction.isEqual(south)){
+			else if (direction.equals(south)){
 				move(1);
 			}
-			else if (direction.isEqual(east)){
+			else if (direction.equals(east)){
 				move(3);
 			}
-			else if (direction.isEqual(west)){
+			else if (direction.equals(west)){
 				move(0);
 			}
 		}
 		else if(source.getL().getY() < destination.getL().getY()){
 			//north
-			if (direction.isEqual(north)){
+			if (direction.equals(north)){
 				move(1);
 			}
-			else if (direction.isEqual(south)){
+			else if (direction.equals(south)){
 				move(2);
 			}
-			else if (direction.isEqual(east)){
+			else if (direction.equals(east)){
 				move(0);
 			}
-			else if (direction.isEqual(west)){
+			else if (direction.equals(west)){
 				move(3);
 			}
 		}

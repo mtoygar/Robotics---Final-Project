@@ -1,3 +1,5 @@
+package com.lejos;
+
 public class PossibleCellLocationTuple {
 	
 	//May add one more location(absolute)

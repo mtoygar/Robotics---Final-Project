@@ -1,5 +1,8 @@
 package com.lejos;
 
+import java.util.LinkedList;
+import java.util.List;
+
 public class Cell {
 	
 	//May add one more location(absolute)
@@ -84,17 +87,17 @@ public class Cell {
 	}
 
 	public int getNumberOfWalls(){
-		in numberOfWalls = 0;
-		if (this.geteN != null){
+		int numberOfWalls = 0;
+		if (this.geteN() != null){
 			numberOfWalls = numberOfWalls + 1;
 		}
-		if (this.getwN != null){
+		if (this.getwN() != null){
 			numberOfWalls = numberOfWalls + 1;
 		}
-		if (this.getsN != null){
+		if (this.getsN() != null){
 			numberOfWalls = numberOfWalls + 1;
 		}
-		if (this.getnN != null){
+		if (this.getnN() != null){
 			numberOfWalls = numberOfWalls + 1;
 		}
 		return numberOfWalls;
@@ -103,34 +106,34 @@ public class Cell {
 	public List<String> getWallLocationList(){
 		List<String> possibleWallLocations = new LinkedList<>();
 		String walls = "";
-		if (this.getnN != null){
+		if (this.getnN() != null){
 			walls = walls + "1";
 		}
 		else{
 			walls = walls + "0";	
 		}
-		if (this.getwN != null){
+		if (this.getwN() != null){
 			walls = walls + "1";
 		}
 		else{
 			walls = walls + "0";			
 		}
-		if (this.getsN != null){
+		if (this.getsN() != null){
 			walls = walls + "1";
 		}
 		else{
 			walls = walls + "0";
 		}
-		if (this.geteN != null){
+		if (this.geteN() != null){
 			walls = walls + "1";
 		}
 		else{
 			walls = walls + "0";
 		}
 		possibleWallLocations.add(walls);
-		possibleWallLocations.add(walls[1] + walls[2] + walls[3] + walls[0]);
-		possibleWallLocations.add(walls[2] + walls[3] + walls[0] + walls[1]);
-		possibleWallLocations.add(walls[3] + walls[0] + walls[2] + walls[2]);
+		possibleWallLocations.add(""+walls.charAt(1) + walls.charAt(2) + walls.charAt(3) + walls.charAt(0));
+		possibleWallLocations.add(""+walls.charAt(2) + walls.charAt(3) + walls.charAt(0) + walls.charAt(1));
+		possibleWallLocations.add(""+walls.charAt(3) + walls.charAt(0) + walls.charAt(1) + walls.charAt(2));
 		return possibleWallLocations;
 	}
 }
