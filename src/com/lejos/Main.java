@@ -326,7 +326,7 @@ public class Main {
 
 			while ((sCurrentLine = br.readLine()) != null) {
 				// create new Cell instance with known locations and color.
-				if (StringUtils.isEqual(sCurrentLine[6], "n")){
+				if (sCurrentLine[6].equals("n")){
 					Cell cell = new Cell(new Location(Integer.parseInt(sCurrentLine[0]), Integer.parseInt(sCurrentLine[1])), -1);
 				}
 				else{

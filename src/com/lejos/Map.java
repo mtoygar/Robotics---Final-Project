@@ -118,7 +118,7 @@ public class Map {
 			if ((color == cell.getColor) && (numberOfWalls == cell.getNumberOfWalls)){
 				int direction = 0;
 				for (String wallLocations : cell.getWallLocationList()){
-					if (StringUtils.isEqual(wallLocation, wallLocations)){
+					if (wallLocation.equals(wallLocations)){
 						if (direction == 0){
 							locationTuple.add(new PossibleCellLocationTuple(cell.getL, new Location(0,1)))
 						}
