@@ -34,7 +34,7 @@ import lejos.utility.PilotProps;
 
 public class Main {
 	
-	static final float EDGE = 33;
+	static final float EDGE = 35;
 	static final float HALF_EDGE = 10;
 	static final float LEFT_HALF_EDGE = 7;
 	static final String FILENAME = "map.txt";
@@ -61,6 +61,12 @@ public class Main {
 	static MovePilot pilot;
 	
 	static int turn = 0;
+	
+	
+	static ServerSocket serverSocket;
+	static Socket client;
+	static OutputStream outputStream;
+	static DataOutputStream dataOutputStream;
 	
 	static int getColorSensorValue() {
 		
@@ -165,7 +171,7 @@ public class Main {
     	pilot.setLinearSpeed(15);
     	
 		
-		//ServerSocket serverSocket = new ServerSocket(1234);
+		serverSocket = new ServerSocket(1234);
 		
 		graphicsLCD.clear();
 		graphicsLCD.drawString("FProject", graphicsLCD.getWidth()/2,
@@ -174,7 +180,7 @@ public class Main {
 				20, GraphicsLCD.VCENTER|GraphicsLCD.HCENTER);
 		graphicsLCD.refresh();
 		
-		//Socket client = serverSocket.accept();
+		client = serverSocket.accept();
 		
 		graphicsLCD.clear();
 		graphicsLCD.drawString("FProject", graphicsLCD.getWidth()/2,
@@ -183,13 +189,14 @@ public class Main {
 				20, GraphicsLCD.VCENTER|GraphicsLCD.HCENTER);
 		graphicsLCD.refresh();
         
-		//OutputStream outputStream = client.getOutputStream();
+		outputStream = client.getOutputStream();
 		
-		//DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
+		dataOutputStream = new DataOutputStream(outputStream);
 		
 
 			
 		mMap.initialize(getFront(),getLeft(),getColor());
+		sendData(location,getFront(),true,true,getLeft(),getColor());
 		//int counter = 0;
 		PrintWriter writer = new PrintWriter(FILENAME, "UTF-8");
 		while (!mMap.isDiscovered()) {	
@@ -203,10 +210,6 @@ public class Main {
 			move(moveNumber);
 			calibrate();
 			findValuesWithDirection();
-			
-			
-			//dataOutputStream.writeInt(13);
-			//dataOutputStream.flush();
 
 			
 			//Delay.msDelay(2);
@@ -287,26 +290,54 @@ public class Main {
 		}
 	}
 	
-	public static void findValuesWithDirection() {
+	public static void findValuesWithDirection() throws IOException {
 		if(direction.equals(north)) {
 			mMap.discoverCurrentCell(location,getFront(),true,true,getLeft(),getColor());
+			sendData(location,getFront(),true,true,getLeft(),getColor());
 			//System.out.println("1111111111111");
 		}
 			
 		else if(direction.equals(east)) {
 			mMap.discoverCurrentCell(location,getLeft(),true,getFront(),true,getColor());
+			sendData(location,getLeft(),true,getFront(),true,getColor());
 			//System.out.println("222222222222");
 		}
 			
 		else if(direction.equals(south)) {
 			mMap.discoverCurrentCell(location,true,getFront(),getLeft(),true,getColor());
+			sendData(location,true,getFront(),getLeft(),true,getColor());
 			//System.out.println("33333333333333");
 		}
 			
 		else if(direction.equals(west)) {
 			mMap.discoverCurrentCell(location,true,getLeft(),true,getFront(),getColor());
+			sendData(location,true,getLeft(),true,getFront(),getColor());
 			//System.out.println("444444444444444");
 		}
+	}
+	
+	public static void sendData(Location location, boolean north, boolean south,
+			boolean east, boolean west, int color) throws IOException {
+		dataOutputStream.writeInt(location.getX());
+		dataOutputStream.flush();
+		
+		dataOutputStream.writeInt(location.getY());
+		dataOutputStream.flush();
+		
+		dataOutputStream.writeBoolean(north);
+		dataOutputStream.flush();
+
+		dataOutputStream.writeBoolean(south);
+		dataOutputStream.flush();
+		
+		dataOutputStream.writeBoolean(east);
+		dataOutputStream.flush();
+		
+		dataOutputStream.writeBoolean(west);
+		dataOutputStream.flush();
+		
+		dataOutputStream.writeInt(color);
+		dataOutputStream.flush();
 	}
 	
 	public static int getColor() {
@@ -399,8 +430,8 @@ public class Main {
 		List<PossibleCellLocationTuple> locationTuple = new LinkedList<>();
 		//turn 4 times.
 		String wallLocation = "";
-		for (int i = 0: i<4: i++){
-			if (getFrontUltrasonicSensorValue < HALF_EDGE){
+		for (int i = 0; i<4; i++){
+			if (getFrontUltrasonicSensorValue() < HALF_EDGE){
 				wallLocation = wallLocation + "1";
 				numberOfWalls = numberOfWalls + 1;
 			}
@@ -583,26 +614,36 @@ public class Main {
 	
 	public static void turnLeft() {
 		
-		int target = getGyroSensorValue() + 90;
-		pilot.rotate(-200,true);
-		//
-		System.out.println("Turning!");
-		while((getGyroSensorValue() - target) < 0) System.out.println(getGyroSensorValue());
-		pilot.stop();
 		direction.rotate90Left();
+		
+		int target = getGyroSensorValue() + 87;
+		//int target2 = direction.degree();
+		//System.out.println("direction degree" + target2);
+		//int target = (int)((10 * target1 + 0 * target2) / 10);
+		pilot.rotate(-400,true);
+		//System.out.println("Turning!");
+		while((getGyroSensorValue() - target) < 0) 
+			System.out.println(getGyroSensorValue());
+		pilot.stop();
+		
 		//
 		System.out.println("Turning finished!");
 	}
 	
 	public static void turnRight() {
 		
-		int target = getGyroSensorValue() - 90;
-		pilot.rotate(200,true);
-		//
-		System.out.println("Turning!");
-		while((getGyroSensorValue() - target) > 0) System.out.println(getGyroSensorValue());
-		pilot.stop();
 		direction.rotate90Right();
+		
+		int target = getGyroSensorValue() - 87;
+		//int target2 = direction.degree();
+		//System.out.println("direction degree" + target2);
+		//int target = (int) ((10 * target1 + 0 * target2) / 10);
+		pilot.rotate(400,true);
+		//System.out.println("Turning!");
+		while((getGyroSensorValue() - target) > 0) 
+			System.out.println(getGyroSensorValue());
+		pilot.stop();
+		
 		//
 		System.out.println("Turning finished!");
 	}

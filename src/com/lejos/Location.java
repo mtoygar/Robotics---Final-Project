@@ -31,7 +31,7 @@ public class Location {
 	}
 
 	public boolean equals (Location x) {
-		System.out.println("LL:" + this.toString() +"/" + x.toString());		
+		//System.out.println("LL:" + this.toString() +"/" + x.toString());		
 		boolean result = true;
 		if (this.getX() != x.getX()) result = false;
 		if (this.getY() != x.getY()) result = false;
@@ -66,5 +66,17 @@ public class Location {
 	public String toString() {
 		String result ="" + this.getX() + "/" + this.getY();
 		return result;
+	}
+	
+	public int degree() {
+		if(this.getY() > 0) {
+			return 0;
+		} else if(this.getY() < 0) {
+			return 180;
+		} else if(this.getX() > 0) {
+			return 270;
+		} else if(this.getX() < 0) {
+			return 90;
+		} else return -1;
 	}
 }
