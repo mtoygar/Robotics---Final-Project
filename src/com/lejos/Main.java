@@ -196,20 +196,23 @@ public class Main {
 				
 				populateCellFromLogs();
 								
-				//localizeRobot();
-				
-				location = new Location(0,0);
-				direction = new Location(0,1);
+				localizeRobot();
+				//location = new Location(0,0);
+				//direction = new Location(0,1);
 				
 				List<Cell> path = pathPlanning(getMagicWeaponLocation());
-				
-				System.out.println("PATH:");
+				/* System.out.println("PATH:");
 				int count = 1;
 				for(Cell cell : path) {
 					System.out.println("" + count +". " + cell.getL().toString());
 					count++;
-				}
+				}*/
 				goAccrossPath(path);
+				
+				path = pathPlanning(getBlackCellLocation());
+				goAccrossPath(path);
+				
+				lastStep();
 			} else if(choice == Button.ID_ENTER) {
 				//
 			} else if(choice == Button.ID_ESCAPE) {
@@ -237,10 +240,32 @@ public class Main {
 		return null;
 	}
 	
+	public static Location getBlackCellLocation() {
+		List<Cell> list = mMap.getCellList();
+		for (Cell cell : mMap.getCellList()) {
+			if(cell.getColor() == Color.BLACK) {
+				return new Location(cell.getL().getX(),cell.getL().getY());
+			}
+		}
+		return null;
+	}
+	
 	public static int findNextMove (){
 		if(getColor() == Color.BLACK) {
 			return 3;
 		} else if (getLeft()){
+			return 0; //turn left and forward
+		}
+		else if (getFront()){
+			return 1; // forward
+		}
+		else {
+			return 2; //turn right
+		}
+	}
+	
+	public static int findNextMove2 (){
+		if (getLeft()){
 			return 0; //turn left and forward
 		}
 		else if (getFront()){
@@ -362,17 +387,49 @@ public class Main {
 			writer.println();
 		}
 		writer.close();
-		
+		dataOutputStream.close();
+		serverSocket.close();
 		//
-		Sound.playTone(440, 75, 10);
+		Sound.playTone(440, 75, 50);
 		Sound.playTone(440, 75, 0);
-		Sound.playTone(440, 75, 10);
+		Sound.playTone(440, 75, 50);
 		Sound.playTone(440, 75, 0);
-		Sound.playTone(440, 75, 10);
-		Sound.playTone(440, 75, 0);
+		Sound.playTone(440, 75, 50);
+	}
+	
+	public static void lastStep() throws IOException {
 		
-		//dataOutputStream.close();
-		//serverSocket.close();
+		sendData(location,getFront(),true,true,getLeft(),getColor());
+		while (mMap.findCell(location).getColor() != Color.GREEN) {	
+			
+			Sound.playTone(440, 75, 10);
+			int moveNumber = findNextMove2();
+			
+			move(moveNumber);
+			calibrate();
+			findValuesWithDirection();
+				
+			if(mMap.findCell(location).getColor() == Color.RED) redCell();
+			if(mMap.findCell(location).getColor() == Color.GREEN) greenCell();
+			//Delay.msDelay(2);
+			//System.out.println("Sent!");
+			//counter++;
+		}
+		
+		dataOutputStream.close();
+		serverSocket.close();
+		
+		
+	}
+	
+	public static void redCell() {
+		//
+		Sound.beepSequence();
+	}
+	
+	public static void greenCell() {
+		//
+		Sound.beepSequenceUp();
 	}
 	
 	public static void initializeTaskExec() throws IOException {
