@@ -42,6 +42,7 @@ public class Main {
 	static final float HALF_EDGE = 10;
 	static final float LEFT_HALF_EDGE = 7;
 	static final String FILENAME = "map.txt";
+	static int previousRoute = -1;
 	
 	static Location north = new Location(0,1);
 	static Location south = new Location(0,-1);
@@ -529,7 +530,7 @@ public class Main {
 		return recoveredCellList;
 	}
 
-	public static List<PossibleCellLocationTuple> getPossibleCurrentLocationMap() throws IOException{
+	public static List<PossibleCellLocationTuple> getPossibleCurrentLocationMap(List<PossibleCellLocationTuple> previousTuple) throws IOException{
 		int color = getColorSensorValue();
 		int numberOfWalls = 0;
 		int count = 0;
@@ -553,10 +554,12 @@ public class Main {
 			count = count + 1;
 			turnLeft();
 		}
-		locationTuple = mMap.findPossibleCellMatches(color, numberOfWalls, wallLocation);	
+		locationTuple = mMap.findPossibleCellMatches(color, numberOfWalls, wallLocation, previousRoute, previousTuple);	
+		previousRoute = route;
 		if (locationTuple.size() > 1){
 			if (route == 2){
-				move(2);	
+				move(2);
+				move(1);	
 			}
 			else if(route == 3) {
 				move(5);
@@ -577,10 +580,10 @@ public class Main {
 
 	public static void localizeRobot() throws IOException{
 		
-		List<PossibleCellLocationTuple> locationTuples = getPossibleCurrentLocationMap();	
+		List<PossibleCellLocationTuple> locationTuples = getPossibleCurrentLocationMap(null);	
 		while (locationTuples.size() != 1){
 			//finds an empty direction and go to that direction, on the background. //change the location that is sent to
-			locationTuples = getPossibleCurrentLocationMap();
+			locationTuples = getPossibleCurrentLocationMap(locationTuples);
 			sendLocation(locationTuples);
 		}
 		//return locationTuple.get(0);
@@ -610,7 +613,7 @@ public class Main {
 		while (!mMap.findCell(location).isVisited()){
 			for (Cell cell : mMap.getCellList()){
 				if (cell.isVisited()){
-					for (Cell neighbor : getNeighborCells(cell)){
+					for (Cell neighbor : mMap.getNeighborCells(cell)){
 						if (!neighbor.isVisited()){
 							neighbor.setVisited(true);
 							neighbor.setDistance(cell.getDistance() + 1);
@@ -625,7 +628,7 @@ public class Main {
 		path.add(mMap.findCell(desiredCellLocation));
 		while (count != 0){
 			for (Cell cell : mMap.getCellList()){
-				if (cell.getDistance() == count && (path.size() == 0 || isNeighbor(path.get(path.size() - 1),cell))){
+				if (cell.getDistance() == count && (path.size() == 0 || mMap.isNeighbor(path.get(path.size() - 1),cell))){
 					count = count - 1;
 					path.add(cell);
 					break;
@@ -634,36 +637,6 @@ public class Main {
 		}
 		path.add(mMap.findCell(location));
 		return path;
-	}
-	
-	public static boolean isNeighbor(Cell source, Cell query){
-		for (Cell cell : getNeighborCells(source)){
-			if (query.getL().equals(cell.getL())){
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public static List<Cell> getNeighborCells(Cell cell){
-		List<Cell> neighbors = new ArrayList<>();
-		if (cell.getnN() == null){
-			if (mMap.findCell(new Location(cell.getL().getX(), cell.getL().getY() + 1)) != null)
-			neighbors.add(mMap.findCell(new Location(cell.getL().getX(), cell.getL().getY() + 1)));
-		}
-		if (cell.getsN() == null){
-			if (mMap.findCell(new Location(cell.getL().getX(), cell.getL().getY() - 1)) != null)
-			neighbors.add(mMap.findCell(new Location(cell.getL().getX(), cell.getL().getY() - 1)));
-		}
-		if (cell.geteN() == null){
-			if (mMap.findCell(new Location(cell.getL().getX() + 1, cell.getL().getY())) != null)
-			neighbors.add(mMap.findCell(new Location(cell.getL().getX() + 1, cell.getL().getY())));
-		}
-		if (cell.getwN() == null){
-			if (mMap.findCell(new Location(cell.getL().getX() - 1, cell.getL().getY())) != null)
-			neighbors.add(mMap.findCell(new Location(cell.getL().getX() - 1, cell.getL().getY())));
-		}
-		return neighbors;
 	}
 
 	public static void goAccrossPath(List<Cell> path) throws IOException{
