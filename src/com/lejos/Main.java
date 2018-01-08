@@ -39,8 +39,8 @@ import lejos.utility.PilotProps;
 public class Main {
 	
 	static final float EDGE = 35;
-	static final float HALF_EDGE = 10;
-	static final float LEFT_HALF_EDGE = 7;
+	static final float HALF_EDGE = 9;
+	static final float LEFT_HALF_EDGE = 6;
 	static final String FILENAME = "map.txt";
 	static int previousRoute = -1;
 	
@@ -80,6 +80,8 @@ public class Main {
 	public static final int CELL_DATA = 1;
 	public static final int LOCATION_DATA = 2;
 	
+	public static final double GYRO_TRUST = 0;
+	public static final int GYRO_90 = 83;
 	
 	static int getColorSensorValue() {
 		
@@ -175,6 +177,10 @@ public class Main {
 		
 		pilot.setAngularSpeed(30);
 		pilot.setLinearSpeed(15);
+		pilot.setLinearAcceleration(10);
+		pilot.setAngularAcceleration(10);
+		
+		gyroSensor.reset();
     	
 		graphicsLCD.clear();
 		graphicsLCD.drawString("Choose stage..", graphicsLCD.getWidth()/2,
@@ -187,13 +193,34 @@ public class Main {
 				mapping();
 			} else if(choice == Button.ID_DOWN) {
 				initializeTaskExec();
+				
 				populateCellFromLogs();
-				localizeRobot();
-				goAccrossPath(pathPlanning(getMagicWeaponLocation()));
+								
+				//localizeRobot();
+				
+				location = new Location(0,0);
+				direction = new Location(0,1);
+				
+				List<Cell> path = pathPlanning(getMagicWeaponLocation());
+				
+				System.out.println("PATH:");
+				int count = 1;
+				for(Cell cell : path) {
+					System.out.println("" + count +". " + cell.getL().toString());
+					count++;
+				}
+				goAccrossPath(path);
 			} else if(choice == Button.ID_ENTER) {
-				//mapping();
+				//
 			} else if(choice == Button.ID_ESCAPE) {
 				//mapping();
+			} else if(choice == Button.ID_LEFT) {
+				turnLeft();
+			} else if(choice == Button.ID_RIGHT) {
+				turnRight();
+				/*while(true){
+					System.out.println(getGyroSensorValue());
+				}*/
 			} 
 		}
 		
@@ -201,9 +228,10 @@ public class Main {
 	}
 	
 	public static Location getMagicWeaponLocation() {
+		List<Cell> list = mMap.getCellList();
 		for (Cell cell : mMap.getCellList()) {
 			if(cell.getColor() == Color.BLUE) {
-				return cell.getL();
+				return new Location(cell.getL().getX(),cell.getL().getY());
 			}
 		}
 		return null;
@@ -336,9 +364,12 @@ public class Main {
 		writer.close();
 		
 		//
-		Sound.beep();
-		Sound.beep();
 		Sound.playTone(440, 75, 10);
+		Sound.playTone(440, 75, 0);
+		Sound.playTone(440, 75, 10);
+		Sound.playTone(440, 75, 0);
+		Sound.playTone(440, 75, 10);
+		Sound.playTone(440, 75, 0);
 		
 		//dataOutputStream.close();
 		//serverSocket.close();
@@ -453,7 +484,7 @@ public class Main {
 	}
 
 	public static List<Cell> populateCellFromLogs() throws IOException{
-		List<Cell> recoveredCellList = new LinkedList<>();
+		List<Cell> recoveredCellList = new ArrayList<Cell>();
 
 		
 
@@ -540,7 +571,7 @@ public class Main {
 		//turn 4 times.
 		String wallLocation = "";
 		for (int i = 0; i<4; i++){
-			if (getFrontUltrasonicSensorValue() < HALF_EDGE+10){
+			if (getFrontUltrasonicSensorValue() < HALF_EDGE+12){
 				wallLocation = wallLocation + "1";
 				numberOfWalls = numberOfWalls + 1;
 			}
@@ -553,42 +584,56 @@ public class Main {
 			}
 			count = count + 1;
 			turnLeft();
+			calibrate();
 		}
 		locationTuple = mMap.findPossibleCellMatches(color, numberOfWalls, wallLocation, previousRoute, previousTuple);	
 		previousRoute = route;
-		if (locationTuple.size() > 1){
-			if (route == 2){
-				move(2);
-				move(1);	
-			}
-			else if(route == 3) {
-				move(5);
-			}
-			else if (route == 0){
-				move(1);	
-			}
-			else if (route == 1){
-				move(4);	
-			}
-			/*0 1
-			1 0
-			2 2
-			3 3*/
-		}
+		////
 		return locationTuple;
 	}
 
 	public static void localizeRobot() throws IOException{
 		
 		List<PossibleCellLocationTuple> locationTuples = getPossibleCurrentLocationMap(null);	
+		sendLocation(locationTuples);
 		while (locationTuples.size() != 1){
+			if (locationTuples.size() > 1){
+				if (previousRoute == 2){
+					move(5);
+				}
+				else if(previousRoute == 3) {
+					move(2);
+					move(1);
+				}
+				else if (previousRoute == 0){
+					move(1);	
+				}
+				else if (previousRoute == 1){
+					move(4);	
+				}
+				/*0 1
+				1 0
+				2 2
+				3 3*/
+			}
 			//finds an empty direction and go to that direction, on the background. //change the location that is sent to
 			locationTuples = getPossibleCurrentLocationMap(locationTuples);
 			sendLocation(locationTuples);
 		}
 		//return locationTuple.get(0);
-		location = locationTuples.get(0).getL();
-		direction = locationTuples.get(0).getDirection();
+		sendLocation(locationTuples);
+		location = new Location(locationTuples.get(0).getL().getX(),locationTuples.get(0).getL().getY());
+		direction = new Location(locationTuples.get(0).getDirection().getX(),locationTuples.get(0).getDirection().getY());
+		
+		//
+		Sound.playTone(440, 75, 10);
+		Sound.playTone(440, 75, 0);
+		Sound.playTone(440, 75, 10);
+		Sound.playTone(440, 75, 0);
+		Sound.playTone(440, 75, 10);
+		Sound.playTone(440, 75, 0);
+		
+		
 		
 		
 	}
@@ -625,23 +670,25 @@ public class Main {
 		int finalDistance = mMap.findCell(location).getDistance();
 		int count = finalDistance - 1;
 		List<Cell> path = new ArrayList<Cell>();
-		path.add(mMap.findCell(desiredCellLocation));
-		while (count != 0){
+		if (!location.equals(desiredCellLocation))
+			path.add(mMap.findCell(location));
+		while (count > 0){
 			for (Cell cell : mMap.getCellList()){
-				if (cell.getDistance() == count && (path.size() == 0 || mMap.isNeighbor(path.get(path.size() - 1),cell))){
+				if (cell.getDistance() == count && (mMap.isNeighbor(path.get(path.size() - 1),cell))){
 					count = count - 1;
 					path.add(cell);
 					break;
 				}
 			}
 		}
-		path.add(mMap.findCell(location));
+		if (!location.equals(desiredCellLocation))
+			path.add(mMap.findCell(desiredCellLocation));
 		return path;
 	}
 
 	public static void goAccrossPath(List<Cell> path) throws IOException{
-		for (int i = path.size() - 1; i > 0; i--){
-			findRouteAndMove(path.get(i), path.get(i-1));
+		for (int i = 0; i < path.size()-1; i++){
+			findRouteAndMove(path.get(i), path.get(i+1));
 		}
 	}
 
@@ -659,27 +706,20 @@ public class Main {
 				move(4);
 			}
 			else if (direction.equals(south)){
-				move(5);
+				move(2);
 				move(1);
 			}
 			else if (direction.equals(east)){
-				move(2);
-				move(1);
+				move(5);
 			}
 			else if (direction.equals(west)){
 				move(1);
 			}
-			ArrayList<PossibleCellLocationTuple> dataList = new ArrayList<PossibleCellLocationTuple>();
-			PossibleCellLocationTuple data = new PossibleCellLocationTuple();
-			data.setL(location);
-			data.setDirection(direction);
-			dataList.add(data);
-			sendLocation(dataList);
 		}
 		else if(source.getL().getX() < destination.getL().getX()){
 			//east
 			if (direction.equals(north)){
-				move(5);
+				move(2);
 				move(1);
 			}
 			else if (direction.equals(south)){
@@ -689,21 +729,19 @@ public class Main {
 				move(1);
 			}
 			else if (direction.equals(west)){
-				move(2);
-				move(1);
+				move(5);
 			}
 		}
 		else if(source.getL().getY() > destination.getL().getY()){
 			//south
 			if (direction.equals(north)){
-				move(2);
-				move(1);
+				move(5);
 			}
 			else if (direction.equals(south)){
 				move(1);
 			}
 			else if (direction.equals(east)){
-				move(5);
+				move(2);
 				move(1);
 			}
 			else if (direction.equals(west)){
@@ -716,17 +754,22 @@ public class Main {
 				move(1);
 			}
 			else if (direction.equals(south)){
-				move(2);
-				move(1);
+				move(5);
 			}
 			else if (direction.equals(east)){
 				move(4);
 			}
 			else if (direction.equals(west)){
-				move(5);
+				move(2);
 				move(1);
 			}
 		}
+		ArrayList<PossibleCellLocationTuple> dataList = new ArrayList<PossibleCellLocationTuple>();
+		PossibleCellLocationTuple data = new PossibleCellLocationTuple();
+		data.setL(location);
+		data.setDirection(direction);
+		dataList.add(data);
+		sendLocation(dataList);
 		
 	}
 	
@@ -734,12 +777,12 @@ public class Main {
 		
 		direction.rotate90Left();
 		
-		int reducedError = (int) (0.8 * angleError());
-		int target = getGyroSensorValue() + 90 - reducedError;
+		int reducedError = (int) (GYRO_TRUST * angleError());
+		int target = getGyroSensorValue() + GYRO_90 - reducedError;
 		//int target2 = direction.degree();
 		//System.out.println("direction degree" + target2);
 		//int target = (int)((10 * target1 + 0 * target2) / 10);
-		pilot.rotate(-400,true);
+		pilot.rotate(-1000,true);
 		//System.out.println("Turning!");
 		while((getGyroSensorValue() - target) < 0) 
 			System.out.println(getGyroSensorValue());
@@ -752,12 +795,12 @@ public class Main {
 	public static void turnRight() {
 		
 		direction.rotate90Right();
-		int reducedError = (int) (0.8 * angleError());
-		int target = getGyroSensorValue() - 90 - reducedError;
+		int reducedError = (int) (GYRO_TRUST * angleError());
+		int target = getGyroSensorValue() - GYRO_90 - reducedError;
 		//int target2 = direction.degree();
 		//System.out.println("direction degree" + target2);
 		//int target = (int) ((10 * target1 + 0 * target2) / 10);
-		pilot.rotate(400,true);
+		pilot.rotate(1000,true);
 		//System.out.println("Turning!");
 		while((getGyroSensorValue() - target) > 0) 
 			System.out.println(getGyroSensorValue());
@@ -775,14 +818,14 @@ public class Main {
 	}
 	
 	public static void calibrate() {
-		if(getFrontUltrasonicSensorValue() < (HALF_EDGE / 2)) {
-			pilot.travel(-1 * (HALF_EDGE - getFrontUltrasonicSensorValue()) ); 
+		if(getFrontUltrasonicSensorValue() < (0.75 * HALF_EDGE)) {
+			pilot.travel(-1 * (HALF_EDGE - getFrontUltrasonicSensorValue()) - 1 ); 
 		}
 		
-		if(getLeftUltrasonicSensorValue() < (LEFT_HALF_EDGE / 2) ) {
+		if(getLeftUltrasonicSensorValue() < (0.75 * LEFT_HALF_EDGE) ) {
 			float value = getLeftUltrasonicSensorValue();
 			turnLeft();
-			pilot.travel(-1 * (LEFT_HALF_EDGE - value));
+			pilot.travel(-1 * (LEFT_HALF_EDGE - value) - 1);
 			turnRight();
 		}
 		

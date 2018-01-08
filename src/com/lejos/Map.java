@@ -120,7 +120,7 @@ public class Map {
 			if ((color == cell.getColor()) && (numberOfWalls == cell.getNumberOfWalls())){
 				int direction = 0;
 				for (String wallLocations : cell.getWallLocationList()){
-					if (wallLocation.equals(wallLocations) && (previousLocationTupleList == null || previousLocationTupleList.size() == 0){
+					if (wallLocation.equals(wallLocations) && (previousLocationTupleList == null || previousLocationTupleList.size() == 0)){
 						if (direction == 0){
 							locationTupleList.add(new PossibleCellLocationTuple(cell.getL(), new Location(0,1)));
 						}
@@ -167,7 +167,7 @@ public class Map {
 	public boolean hasNeighborInList(List<PossibleCellLocationTuple> source, Cell query, int previousRoute){
 		for (PossibleCellLocationTuple tuple : source){
 			if (getNeighborCellsInDirection(findCell(tuple.getL()), tuple.getDirection(), previousRoute) != null){
-				if (query.getL().equals(getNeighborCellsInDirection(findCell(tuple.getL()), tuple.getDirection(), previousRoute).getL())){
+				if (getNeighborCellsInDirection(findCell(tuple.getL()), tuple.getDirection(), previousRoute) != null && query.getL().equals(getNeighborCellsInDirection(findCell(tuple.getL()), tuple.getDirection(), previousRoute).getL())){
 					return true;
 				}
 			}
@@ -178,20 +178,20 @@ public class Map {
 	public List<Cell> getNeighborCells(Cell cell){
 		List<Cell> neighbors = new ArrayList<>();
 		if (cell.getnN() == null){
-			if (mMap.findCell(new Location(cell.getL().getX(), cell.getL().getY() + 1)) != null)
-			neighbors.add(mMap.findCell(new Location(cell.getL().getX(), cell.getL().getY() + 1)));
+			if (findCell(new Location(cell.getL().getX(), cell.getL().getY() + 1)) != null)
+			neighbors.add(findCell(new Location(cell.getL().getX(), cell.getL().getY() + 1)));
 		}
 		if (cell.getsN() == null){
-			if (mMap.findCell(new Location(cell.getL().getX(), cell.getL().getY() - 1)) != null)
-			neighbors.add(mMap.findCell(new Location(cell.getL().getX(), cell.getL().getY() - 1)));
+			if (findCell(new Location(cell.getL().getX(), cell.getL().getY() - 1)) != null)
+			neighbors.add(findCell(new Location(cell.getL().getX(), cell.getL().getY() - 1)));
 		}
 		if (cell.geteN() == null){
-			if (mMap.findCell(new Location(cell.getL().getX() + 1, cell.getL().getY())) != null)
-			neighbors.add(mMap.findCell(new Location(cell.getL().getX() + 1, cell.getL().getY())));
+			if (findCell(new Location(cell.getL().getX() + 1, cell.getL().getY())) != null)
+			neighbors.add(findCell(new Location(cell.getL().getX() + 1, cell.getL().getY())));
 		}
 		if (cell.getwN() == null){
-			if (mMap.findCell(new Location(cell.getL().getX() - 1, cell.getL().getY())) != null)
-			neighbors.add(mMap.findCell(new Location(cell.getL().getX() - 1, cell.getL().getY())));
+			if (findCell(new Location(cell.getL().getX() - 1, cell.getL().getY())) != null)
+			neighbors.add(findCell(new Location(cell.getL().getX() - 1, cell.getL().getY())));
 		}
 		return neighbors;
 	}
@@ -200,41 +200,41 @@ public class Map {
 		for (int i = 0; i< previousRoute; i++){
 			direction.rotate90Left();
 		}
-		if (direction.equals(Location(0,1))){
+		if (direction.equals(new Location(0,1))){
 			//north
 			if (cell.getnN() == null){
-				if (mMap.findCell(new Location(cell.getL().getX(), cell.getL().getY() + 1)) != null)
-					return mMap.findCell(new Location(cell.getL().getX(), cell.getL().getY() + 1)));
+				if (findCell(new Location(cell.getL().getX(), cell.getL().getY() + 1)) != null)
+					return findCell(new Location(cell.getL().getX(), cell.getL().getY() + 1));
 			}
 			else{
 				return null;
 			}
 		}
-		if (direction.equals(Location(0,-1))){
+		if (direction.equals(new Location(0,-1))){
 			//south
 			if (cell.getsN() == null){
-				if (mMap.findCell(new Location(cell.getL().getX(), cell.getL().getY() - 1)) != null)
-					return (mMap.findCell(new Location(cell.getL().getX(), cell.getL().getY() - 1)));
-			}
-			else{
-				return null
-			}
-		}
-		if (direction.equals(Location(1,0))){
-			//east
-			if (cell.geteN() == null){
-				if (mMap.findCell(new Location(cell.getL().getX() + 1, cell.getL().getY())) != null)
-					return (mMap.findCell(new Location(cell.getL().getX() + 1, cell.getL().getY())));
+				if (findCell(new Location(cell.getL().getX(), cell.getL().getY() - 1)) != null)
+					return (findCell(new Location(cell.getL().getX(), cell.getL().getY() - 1)));
 			}
 			else{
 				return null;
 			}
 		}
-		if (direction.equals(Location(-1,0))){
+		if (direction.equals(new Location(1,0))){
+			//east
+			if (cell.geteN() == null){
+				if (findCell(new Location(cell.getL().getX() + 1, cell.getL().getY())) != null)
+					return (findCell(new Location(cell.getL().getX() + 1, cell.getL().getY())));
+			}
+			else{
+				return null;
+			}
+		}
+		if (direction.equals(new Location(-1,0))){
 			//west
 			if (cell.getwN() == null){
-				if (mMap.findCell(new Location(cell.getL().getX() - 1, cell.getL().getY())) != null)
-					return (mMap.findCell(new Location(cell.getL().getX() - 1, cell.getL().getY())));
+				if (findCell(new Location(cell.getL().getX() - 1, cell.getL().getY())) != null)
+					return (findCell(new Location(cell.getL().getX() - 1, cell.getL().getY())));
 			}	
 			else{
 				return null;
