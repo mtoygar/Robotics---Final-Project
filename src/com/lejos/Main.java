@@ -76,6 +76,9 @@ public class Main {
 	static OutputStream outputStream;
 	static DataOutputStream dataOutputStream;
 	
+	public static final int CELL_DATA = 1;
+	public static final int LOCATION_DATA = 2;
+	
 	
 	static int getColorSensorValue() {
 		
@@ -182,7 +185,7 @@ public class Main {
 			if(choice == Button.ID_UP) {
 				mapping();
 			} else if(choice == Button.ID_DOWN) {
-				//taskExec();
+				initializeTaskExec();
 				populateCellFromLogs();
 				localizeRobot();
 				goAccrossPath(pathPlanning(getMagicWeaponLocation()));
@@ -340,7 +343,7 @@ public class Main {
 		//serverSocket.close();
 	}
 	
-	public static void initializeTaskExec () throws IOException {
+	public static void initializeTaskExec() throws IOException {
 		serverSocket = new ServerSocket(1234);
 		
 		graphicsLCD.clear();
@@ -392,6 +395,11 @@ public class Main {
 	
 	public static void sendData(Location location, boolean north, boolean south,
 			boolean east, boolean west, int color) throws IOException {
+		
+		//This integer tells PC that next data is cell knowledge.
+		dataOutputStream.writeInt(CELL_DATA);
+		dataOutputStream.flush();
+		
 		dataOutputStream.writeInt(location.getX());
 		dataOutputStream.flush();
 		
@@ -414,12 +422,36 @@ public class Main {
 		dataOutputStream.flush();
 	}
 	
+	public static void sendLocation(List<PossibleCellLocationTuple> list) throws IOException {
+		
+		//This integer tells PC that next data is cell knowledge.
+		dataOutputStream.writeInt(LOCATION_DATA);
+		dataOutputStream.flush();
+		
+		dataOutputStream.writeInt(list.size());
+		dataOutputStream.flush();
+		
+		for(int i=0;i<list.size();i++) {
+			dataOutputStream.writeInt(list.get(i).getL().getX());
+			dataOutputStream.flush();
+			
+			dataOutputStream.writeInt(list.get(i).getL().getY());
+			dataOutputStream.flush();
+			
+			dataOutputStream.writeInt(list.get(i).getDirection().getX());
+			dataOutputStream.flush();
+			
+			dataOutputStream.writeInt(list.get(i).getDirection().getY());
+			dataOutputStream.flush();
+		}
+	}
+	
 	public static int getColor() {
 		return getColorSensorValue();
 		//return -1;
 	}
 
-	public static List<Cell> populateCellFromLogs(){
+	public static List<Cell> populateCellFromLogs() throws IOException{
 		List<Cell> recoveredCellList = new LinkedList<>();
 
 		
@@ -486,6 +518,14 @@ public class Main {
 
 		} 
 		mMap.setCellList(recoveredCellList);
+		for(Cell cell : recoveredCellList) {
+			boolean north=true,south=true,east=true,west=true;
+			if(cell.getnN() != null) north = !cell.getnN().equals(Map.getWall());
+			if(cell.getsN() != null) south = !cell.getsN().equals(Map.getWall());
+			if(cell.geteN() != null) east = !cell.geteN().equals(Map.getWall());
+			if(cell.getwN() != null) west = !cell.getwN().equals(Map.getWall());
+			sendData(cell.getL(),north ,south,east, west, cell.getColor());
+		}
 		return recoveredCellList;
 	}
 
@@ -537,14 +577,15 @@ public class Main {
 
 	public static void localizeRobot() throws IOException{
 		
-		List<PossibleCellLocationTuple> locationTuple = getPossibleCurrentLocationMap();	
-		while (locationTuple.size() != 1){
+		List<PossibleCellLocationTuple> locationTuples = getPossibleCurrentLocationMap();	
+		while (locationTuples.size() != 1){
 			//finds an empty direction and go to that direction, on the background. //change the location that is sent to
-			locationTuple = getPossibleCurrentLocationMap();
+			locationTuples = getPossibleCurrentLocationMap();
+			sendLocation(locationTuples);
 		}
 		//return locationTuple.get(0);
-		location = locationTuple.get(0).getL();
-		direction = locationTuple.get(0).getDirection();
+		location = locationTuples.get(0).getL();
+		direction = locationTuples.get(0).getDirection();
 		
 		
 	}
@@ -655,6 +696,12 @@ public class Main {
 			else if (direction.equals(west)){
 				move(1);
 			}
+			ArrayList<PossibleCellLocationTuple> dataList = new ArrayList<PossibleCellLocationTuple>();
+			PossibleCellLocationTuple data = new PossibleCellLocationTuple();
+			data.setL(location);
+			data.setDirection(direction);
+			dataList.add(data);
+			sendLocation(dataList);
 		}
 		else if(source.getL().getX() < destination.getL().getX()){
 			//east
