@@ -10,7 +10,7 @@ public class Cell {
 	Cell nN,sN,wN,eN;
 	int color;
 	boolean visited = false;
-	int distance;
+	int distance = 0;
 	
 	public Cell() {
 		super();

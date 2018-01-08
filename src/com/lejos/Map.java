@@ -115,30 +115,30 @@ public class Map {
 	}
 
 	public List<PossibleCellLocationTuple> findPossibleCellMatches(int color, int numberOfWalls, String wallLocation){
-		List<PossibleCellLocationTuple> locationTuple = new LinkedList<>();
+		List<PossibleCellLocationTuple> locationTupleList = new ArrayList<>();
 		for (Cell cell : getCellList()){
 			if ((color == cell.getColor()) && (numberOfWalls == cell.getNumberOfWalls())){
 				int direction = 0;
 				for (String wallLocations : cell.getWallLocationList()){
 					if (wallLocation.equals(wallLocations)){
 						if (direction == 0){
-							locationTuple.add(new PossibleCellLocationTuple(cell.getL(), new Location(0,1)));
+							locationTupleList.add(new PossibleCellLocationTuple(cell.getL(), new Location(0,1)));
 						}
 						else if (direction == 1){
-							locationTuple.add(new PossibleCellLocationTuple(cell.getL(), new Location(-1,0)));
+							locationTupleList.add(new PossibleCellLocationTuple(cell.getL(), new Location(-1,0)));
 						}
 						else if (direction == 2){
-							locationTuple.add(new PossibleCellLocationTuple(cell.getL(), new Location(0,-1)));
+							locationTupleList.add(new PossibleCellLocationTuple(cell.getL(), new Location(0,-1)));
 						}
 						else if (direction == 3){
-							locationTuple.add(new PossibleCellLocationTuple(cell.getL(), new Location(1,0)));
+							locationTupleList.add(new PossibleCellLocationTuple(cell.getL(), new Location(1,0)));
 						}
 					}
-					direction = direction + 1;
+					direction++;
 				}
 			}
 		}
-		return locationTuple;
+		return locationTupleList;
 	}
 	
 
