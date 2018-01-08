@@ -761,7 +761,8 @@ public class Main {
 		
 		direction.rotate90Left();
 		
-		int target = getGyroSensorValue() + 87;
+		int reducedError = (int) (0.8 * angleError());
+		int target = getGyroSensorValue() + 90 - reducedError;
 		//int target2 = direction.degree();
 		//System.out.println("direction degree" + target2);
 		//int target = (int)((10 * target1 + 0 * target2) / 10);
@@ -778,8 +779,8 @@ public class Main {
 	public static void turnRight() {
 		
 		direction.rotate90Right();
-		
-		int target = getGyroSensorValue() - 87;
+		int reducedError = (int) (0.8 * angleError());
+		int target = getGyroSensorValue() - 90 - reducedError;
 		//int target2 = direction.degree();
 		//System.out.println("direction degree" + target2);
 		//int target = (int) ((10 * target1 + 0 * target2) / 10);
@@ -793,6 +794,13 @@ public class Main {
 		System.out.println("Turning finished!");
 	}
 	
+	public static int angleError() {
+		int angle = getGyroSensorValue();
+		int error = angle % 90;
+		if(error > 45) error = error - 90;
+		return error;
+	}
+	
 	public static void calibrate() {
 		if(getFrontUltrasonicSensorValue() < (HALF_EDGE / 2)) {
 			pilot.travel(-1 * (HALF_EDGE - getFrontUltrasonicSensorValue()) ); 
@@ -804,6 +812,8 @@ public class Main {
 			pilot.travel(-1 * (LEFT_HALF_EDGE - value));
 			turnRight();
 		}
+		
+		
 	}
 	
 }
