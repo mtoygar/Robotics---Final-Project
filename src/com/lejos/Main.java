@@ -405,7 +405,7 @@ public class Main {
 	
 	public static void lastStep() throws IOException {
 		
-		sendData(location,getFront(),true,true,getLeft(),getColor());
+		//sendData(location,getFront(),true,true,getLeft(),getColor());
 		while (mMap.findCell(location).getColor() != Color.GREEN) {	
 			
 			Sound.playTone(440, 75, 10);
@@ -414,12 +414,16 @@ public class Main {
 			move(moveNumber);
 			calibrate();
 			findValuesWithDirection();
+			
+			ArrayList<PossibleCellLocationTuple> dataList = new ArrayList<PossibleCellLocationTuple>();
+			PossibleCellLocationTuple data = new PossibleCellLocationTuple();
+			data.setL(location);
+			data.setDirection(direction);
+			dataList.add(data);
+			sendLocation(dataList);
 				
 			if(mMap.findCell(location).getColor() == Color.RED) redCell();
 			if(mMap.findCell(location).getColor() == Color.GREEN) greenCell();
-			//Delay.msDelay(2);
-			//System.out.println("Sent!");
-			//counter++;
 		}
 		
 		dataOutputStream.close();
