@@ -82,7 +82,7 @@ public class Main {
 	public static final int LOCATION_DATA = 2;
 	
 	public static final double GYRO_TRUST = 0;
-	public static final int GYRO_90 = 83;
+	public static final int GYRO_90 = 84;
 	
 	public static final int GRASP_ANGLE = 38;
 	public static boolean gotBall = false;
@@ -202,8 +202,8 @@ public class Main {
 				initializeTaskExec();
 				populateCellFromLogs();				
 				localizeRobot();
-				//location = new Location(0,0);
-				//direction = new Location(0,1);
+				//location = new Location(0,2);
+				//direction = new Location(-1,0);
 				
 				List<Cell> path = pathPlanning(getMagicWeaponLocation());
 				/* System.out.println("PATH:");
@@ -220,20 +220,20 @@ public class Main {
 				
 				lastStep();
 			} else if(choice == Button.ID_ENTER) {
-				//
+				System.out.println(getColorSensorValue());
 			} else if(choice == Button.ID_ESCAPE) {
 				//mapping();
 			} else if(choice == Button.ID_LEFT) {
-				//turnLeft();
-				pilot.travel(20);
+				turnLeft();
+				/*pilot.travel(20);
 				graspBall();
 				pilot.rotate(180);
 				pilot.travel(20);
-				releaseBall();
+				releaseBall();*/
 				
 			} else if(choice == Button.ID_RIGHT) {
-				releaseBall();
-				//turnRight();
+				//releaseBall();
+				turnRight();
 				/*while(true){
 					System.out.println(getGyroSensorValue());
 				}*/
@@ -662,7 +662,7 @@ public class Main {
 		//turn 4 times.
 		String wallLocation = "";
 		for (int i = 0; i<4; i++){
-			if (getFrontUltrasonicSensorValue() < HALF_EDGE+12){
+			if (!getFront()){
 				wallLocation = wallLocation + "1";
 				numberOfWalls = numberOfWalls + 1;
 			}
@@ -744,6 +744,10 @@ public class Main {
 		}
 		//direction = new Location(north.getX(),north.getY());
 		// implement Dijkstra's Algorithm.
+		
+		for (Cell cell: mMap.getCellList()){
+			cell.setVisited(false);
+		}
 		mMap.findCell(desiredCellLocation).setVisited(true);
 		mMap.findCell(desiredCellLocation).setDistance(0);
 		while (!mMap.findCell(location).isVisited()){
