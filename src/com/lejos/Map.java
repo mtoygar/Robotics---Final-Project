@@ -138,7 +138,7 @@ public class Map {
 						if (direction == 0 && hasNeighborInList(previousLocationTupleList, cell, previousRoute)){
 							locationTupleList.add(new PossibleCellLocationTuple(cell.getL(), new Location(0,1)));
 						}
-						else if (direction == 1 && hasNeighborInList(previousLocationTupleList, cell, previousRoute)){
+						else if (direction == 1 && hasNeighborInList(previousLocationTupleList, cell, previousRoute, direction)){
 							locationTupleList.add(new PossibleCellLocationTuple(cell.getL(), new Location(-1,0)));
 						}
 						else if (direction == 2 && hasNeighborInList(previousLocationTupleList, cell, previousRoute)){
@@ -164,10 +164,10 @@ public class Map {
 		return false;
 	}
 	
-	public boolean hasNeighborInList(List<PossibleCellLocationTuple> source, Cell query, int previousRoute){
+	public boolean hasNeighborInList(List<PossibleCellLocationTuple> source, Cell query, int previousRoute, int direction){
 		for (PossibleCellLocationTuple tuple : source){
-			if (getNeighborCellsInDirection(findCell(tuple.getL()), tuple.getDirection(), previousRoute) != null){
-				if (getNeighborCellsInDirection(findCell(tuple.getL()), tuple.getDirection(), previousRoute) != null && query.getL().equals(getNeighborCellsInDirection(findCell(tuple.getL()), tuple.getDirection(), previousRoute).getL())){
+			if (getNeighborCellsInDirection(findCell(tuple.getL()), tuple.getDirection(), previousRoute, direction) != null){
+				if (getNeighborCellsInDirection(findCell(tuple.getL()), tuple.getDirection(), previousRoute, direction) != null && query.getL().equals(getNeighborCellsInDirection(findCell(tuple.getL()), tuple.getDirection(), previousRoute).getL(), direction)){
 					return true;
 				}
 			}
@@ -196,11 +196,12 @@ public class Map {
 		return neighbors;
 	}
 
-	public Cell getNeighborCellsInDirection(Cell cell, Location direction, int previousRoute){
+	public Cell getNeighborCellsInDirection(Cell cell, Location dir, int previousRoute, int currentDirection){
+		Location direction = new Location(dir.getX(), dir.getY()) ;
 		for (int i = 0; i< previousRoute; i++){
 			direction.rotate90Left();
 		}
-		if (direction.equals(new Location(0,1))){
+		if (direction.equals(new Location(0,1)) && currentDirection == 0){
 			//north
 			if (cell.getnN() == null){
 				if (findCell(new Location(cell.getL().getX(), cell.getL().getY() + 1)) != null)
@@ -210,7 +211,7 @@ public class Map {
 				return null;
 			}
 		}
-		if (direction.equals(new Location(0,-1))){
+		if (direction.equals(new Location(0,-1)) && currentDirection == 2){
 			//south
 			if (cell.getsN() == null){
 				if (findCell(new Location(cell.getL().getX(), cell.getL().getY() - 1)) != null)
@@ -220,7 +221,7 @@ public class Map {
 				return null;
 			}
 		}
-		if (direction.equals(new Location(1,0))){
+		if (direction.equals(new Location(1,0)) && currentDirection == 4){
 			//east
 			if (cell.geteN() == null){
 				if (findCell(new Location(cell.getL().getX() + 1, cell.getL().getY())) != null)
@@ -230,7 +231,7 @@ public class Map {
 				return null;
 			}
 		}
-		if (direction.equals(new Location(-1,0))){
+		if (direction.equals(new Location(-1,0)) && currentDirection == 3){
 			//west
 			if (cell.getwN() == null){
 				if (findCell(new Location(cell.getL().getX() - 1, cell.getL().getY())) != null)
