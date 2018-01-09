@@ -184,8 +184,8 @@ public class Main {
 		pilot.setLinearAcceleration(10);
 		pilot.setAngularAcceleration(10);
 		
-		graspMotor.setSpeed(20);
-		graspMotor.setAcceleration(10);
+		graspMotor.setSpeed(30);
+		graspMotor.setAcceleration(30);
 		
 		gyroSensor.reset();
     	
@@ -224,9 +224,16 @@ public class Main {
 			} else if(choice == Button.ID_ESCAPE) {
 				//mapping();
 			} else if(choice == Button.ID_LEFT) {
-				turnLeft();
+				//turnLeft();
+				pilot.travel(20);
+				graspBall();
+				pilot.rotate(180);
+				pilot.travel(20);
+				releaseBall();
+				
 			} else if(choice == Button.ID_RIGHT) {
-				turnRight();
+				releaseBall();
+				//turnRight();
 				/*while(true){
 					System.out.println(getGyroSensorValue());
 				}*/
@@ -441,14 +448,16 @@ public class Main {
 	public static void releaseBall() {
 		if(gotBall) {
 			gotBall = false;
-			graspMotor.rotate(GRASP_ANGLE);
+			graspMotor.rotate(-1 * GRASP_ANGLE);
+			graspMotor.flt();
 		}
 	}
 	
 	public static void graspBall() {
 		if(!gotBall) {
 			gotBall = true;
-			graspMotor.rotate(-1 * GRASP_ANGLE);
+			graspMotor.rotate(GRASP_ANGLE);
+			graspMotor.flt();
 		}		
 	}
 	
