@@ -39,7 +39,7 @@ import lejos.utility.PilotProps;
 public class Main {
 	
 	static final float EDGE = 35;
-	static final float HALF_EDGE = 9;
+	static final float HALF_EDGE = 14;
 	static final float LEFT_HALF_EDGE = 6;
 	static final String FILENAME = "map.txt";
 	static int previousRoute = -1;
@@ -62,6 +62,7 @@ public class Main {
 	
 	static EV3LargeRegulatedMotor leftMotor = new EV3LargeRegulatedMotor(MotorPort.A);
 	static EV3LargeRegulatedMotor rightMotor = new EV3LargeRegulatedMotor(MotorPort.D);
+	static EV3LargeRegulatedMotor graspMotor = new EV3LargeRegulatedMotor(MotorPort.B);
 
 	
 	static NXTUltrasonicSensor ultrasonicSensorFront = new NXTUltrasonicSensor(SensorPort.S3);
@@ -82,6 +83,9 @@ public class Main {
 	
 	public static final double GYRO_TRUST = 0;
 	public static final int GYRO_90 = 83;
+	
+	public static final int GRASP_ANGLE = 38;
+	public static boolean gotBall = false;
 	
 	static int getColorSensorValue() {
 		
@@ -180,6 +184,9 @@ public class Main {
 		pilot.setLinearAcceleration(10);
 		pilot.setAngularAcceleration(10);
 		
+		graspMotor.setSpeed(20);
+		graspMotor.setAcceleration(10);
+		
 		gyroSensor.reset();
     	
 		graphicsLCD.clear();
@@ -193,9 +200,7 @@ public class Main {
 				mapping();
 			} else if(choice == Button.ID_DOWN) {
 				initializeTaskExec();
-				
-				populateCellFromLogs();
-								
+				populateCellFromLogs();				
 				localizeRobot();
 				//location = new Location(0,0);
 				//direction = new Location(0,1);
@@ -208,6 +213,7 @@ public class Main {
 					count++;
 				}*/
 				goAccrossPath(path);
+				graspBall();
 				
 				path = pathPlanning(getBlackCellLocation());
 				goAccrossPath(path);
@@ -231,7 +237,7 @@ public class Main {
 	}
 	
 	public static Location getMagicWeaponLocation() {
-		List<Cell> list = mMap.getCellList();
+		//List<Cell> list = mMap.getCellList();
 		for (Cell cell : mMap.getCellList()) {
 			if(cell.getColor() == Color.BLUE) {
 				return new Location(cell.getL().getX(),cell.getL().getY());
@@ -241,7 +247,7 @@ public class Main {
 	}
 	
 	public static Location getBlackCellLocation() {
-		List<Cell> list = mMap.getCellList();
+		//List<Cell> list = mMap.getCellList();
 		for (Cell cell : mMap.getCellList()) {
 			if(cell.getColor() == Color.BLACK) {
 				return new Location(cell.getL().getX(),cell.getL().getY());
@@ -424,7 +430,22 @@ public class Main {
 	
 	public static void redCell() {
 		//
+		releaseBall();
 		Sound.beepSequence();
+	}
+	
+	public static void releaseBall() {
+		if(gotBall) {
+			gotBall = false;
+			graspMotor.rotate(GRASP_ANGLE);
+		}
+	}
+	
+	public static void graspBall() {
+		if(!gotBall) {
+			gotBall = true;
+			graspMotor.rotate(-1 * GRASP_ANGLE);
+		}		
 	}
 	
 	public static void greenCell() {
